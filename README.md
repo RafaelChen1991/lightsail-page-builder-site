@@ -55,3 +55,8 @@ npm run dev
 ## Lightsail 上線方向
 
 先以 Lightsail VPS 部署 Next.js 與 PostgreSQL，搭配 Lightsail snapshot 做備份。之後若內容檔案變多，再接 S3；若需要聯絡表單寄信，再接 SES；資料庫負載變大時，再把 PostgreSQL 拆到 RDS。
+
+## SOP 文件
+
+- [營運接手 SOP](docs/OPERATIONS_SOP.md)
+- [緊急狀況處理 SOP](docs/INCIDENT_RESPONSE_SOP.md)
