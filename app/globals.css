@@ -72,8 +72,50 @@ textarea {
   overflow: hidden;
 }
 
-.heroImage {
+.heroCarousel,
+.heroSlide {
+  position: absolute;
+  inset: 0;
+}
+
+.heroCarousel {
+  z-index: 0;
+  overflow: hidden;
+}
+
+.heroSlide {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+
+.heroSlide.isActive {
+  opacity: 1;
+}
+
+.heroDots {
+  position: absolute;
+  z-index: 3;
+  left: 40px;
+  bottom: 34px;
+  display: flex;
+  gap: 10px;
+}
+
+.heroDot {
+  width: 11px;
+  height: 11px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+}
+
+.heroDot.isActive {
+  background: white;
 }
 
 .heroOverlay {
@@ -382,6 +424,11 @@ textarea {
   .hero {
     min-height: 88vh;
     padding: 96px 22px 46px;
+  }
+
+  .heroDots {
+    left: 22px;
+    bottom: 22px;
   }
 
   h1 {

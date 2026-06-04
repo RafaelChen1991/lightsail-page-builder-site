@@ -43,6 +43,21 @@ npm run dev
 
 後台：http://localhost:3000/admin
 
+## S3 圖片輪播設定
+
+首頁 Hero 支援外部圖片 URL 輪播。將公開可讀取的圖片 URL 以逗號分隔填入 `.env`：
+
+```bash
+NEXT_PUBLIC_CAROUSEL_IMAGES="https://your-bucket.s3.ap-northeast-1.amazonaws.com/hero-1.jpg,https://your-bucket.s3.ap-northeast-1.amazonaws.com/hero-2.jpg"
+```
+
+修改後需重新 build 並重啟：
+
+```bash
+npm run build
+pm2 restart pagebuilder
+```
+
 ## 初始架構
 
 - `app/page.tsx`：前台官方網站

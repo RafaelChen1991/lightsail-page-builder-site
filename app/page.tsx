@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { HeroCarousel } from "@/app/components/HeroCarousel";
 import { getPublishedBlocks } from "@/lib/content";
 
 const stackItems = [
@@ -13,6 +13,7 @@ const stackItems = [
 export default async function HomePage() {
   const blocks = await getPublishedBlocks();
   const [hero, ...sections] = blocks;
+  const carouselImages = getCarouselImages();
 
   return (
     <main>
@@ -26,14 +27,7 @@ export default async function HomePage() {
       </nav>
 
       <section className="hero">
-        <Image
-          src="/hero-page-builder.png"
-          alt="Page builder website interface"
-          fill
-          priority
-          sizes="100vw"
-          className="heroImage"
-        />
+        <HeroCarousel images={carouselImages} />
         <div className="heroOverlay" />
         <div className="heroContent">
           <p className="eyebrow">{hero?.eyebrow}</p>
@@ -85,4 +79,11 @@ export default async function HomePage() {
       </section>
     </main>
   );
+}
+
+function getCarouselImages() {
+  return (process.env.NEXT_PUBLIC_CAROUSEL_IMAGES || "")
+    .split(",")
+    .map((url) => url.trim())
+    .filter(Boolean);
 }
