@@ -52,9 +52,18 @@ export const fallbackBlocks: SiteBlock[] = [
   }
 ];
 
-export async function getPublishedBlocks() {
+type PageBlockReader = {
+  pageBlock: {
+    findMany: (args: {
+      where: { published: true };
+      orderBy: { sortOrder: "asc" };
+    }) => Promise<SiteBlock[]>;
+  };
+};
+
+export async function getPublishedBlocks(client: PageBlockReader = prisma) {
   try {
-    const blocks = await prisma.pageBlock.findMany({
+    const blocks = await client.pageBlock.findMany({
       where: { published: true },
       orderBy: { sortOrder: "asc" }
     });
