@@ -47,6 +47,63 @@ npm run start
 - `ADMIN_PASSWORD`
 - `DATABASE_URL`
 
+## GitHub Actions 自動部署到 Lightsail
+
+專案已加入 `.github/workflows/deploy-lightsail.yml`。流程是：
+
+1. push 到 `main` 或手動執行 workflow
+2. GitHub Actions 啟動測試用 PostgreSQL
+3. 執行 `npm ci`、`npm run db:push`、`npm run db:seed`、`npm run build`
+4. build 成功後，透過 SSH 登入 Lightsail
+5. 在 Lightsail 專案目錄執行 `git pull --ff-only origin main`、`npm ci`、`npm run db:push`、`npm run build`、`pm2 restart`
+
+### Lightsail 先決條件
+
+Lightsail 上要先完成一次手動部署，並確認以下條件成立：
+
+- 專案目錄已經是 Git repo，例如 `/home/ubuntu/lightsail-page-builder-site`
+- `.env` 已放在 Lightsail 專案目錄，且不要提交到 GitHub
+- `DATABASE_URL` 指向 production PostgreSQL
+- `pm2` 已建立 app，例如 `pagebuilder`
+- `git pull --ff-only origin main` 在 Lightsail 上可以成功
+- Lightsail 使用者的 SSH key 可以登入
+
+如果還沒建立 PM2 app，可先在 Lightsail 專案目錄執行：
+
+```bash
+npm run build
+pm2 start npm --name pagebuilder -- start
+pm2 save
+```
+
+### GitHub Secrets
+
+到 GitHub repo 的 `Settings` → `Secrets and variables` → `Actions` → `New repository secret` 新增：
+
+| Secret | 範例 | 說明 |
+| --- | --- | --- |
+| `LIGHTSAIL_HOST` | `12.34.56.78` | Lightsail public IP 或網域 |
+| `LIGHTSAIL_USER` | `ubuntu` | SSH 使用者，依映像檔可能是 `ubuntu`、`bitnami` 或其他名稱 |
+| `LIGHTSAIL_SSH_KEY` | `-----BEGIN OPENSSH PRIVATE KEY-----...` | 可登入 Lightsail 的私鑰內容 |
+| `LIGHTSAIL_PORT` | `22` | SSH port |
+| `LIGHTSAIL_APP_DIR` | `/home/ubuntu/lightsail-page-builder-site` | Lightsail 上的專案絕對路徑 |
+| `LIGHTSAIL_PM2_APP_NAME` | `pagebuilder` | PM2 app 名稱 |
+
+### 建議練習順序
+
+1. 先到 GitHub Actions 手動執行 `Deploy to Lightsail`
+2. 確認 workflow 的 `Build check` 成功
+3. 確認 `Deploy` 成功，並到網站檢查版本有更新
+4. 再做一次小修改，push 到 `main`，確認自動部署會被觸發
+
+### 常見失敗點
+
+- `Permission denied`：`LIGHTSAIL_SSH_KEY` 不對，或 public key 沒放到 Lightsail 的 `~/.ssh/authorized_keys`
+- `git pull --ff-only` 失敗：Lightsail 上有本機 commit 或分支落後方式不一致，先手動整理 Git 狀態
+- `npm ci` 失敗：`package-lock.json` 與 `package.json` 不一致，先在本機跑一次 `npm install` 後提交 lockfile
+- `npm run db:push` 失敗：production `DATABASE_URL` 或 PostgreSQL 權限有問題
+- `pm2 restart` 失敗：`LIGHTSAIL_PM2_APP_NAME` 和實際 PM2 app 名稱不同，可在 Lightsail 執行 `pm2 list` 確認
+
 ## 為什麼先不直接用 RDS
 
 RDS 比同機 PostgreSQL 更穩、更好維護，但它會增加固定成本。這個專案初期若只是官方網站 + 後台編輯，同機 PostgreSQL 搭配 snapshot 已足夠。等資料重要性、多人維運、備份要求變高，再拆到 RDS 會比較合理。
