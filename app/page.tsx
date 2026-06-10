@@ -5,7 +5,7 @@ import { getPublishedBlocks } from "@/lib/content";
 const stackItems = [
   ["Lightsail VPS", "Next.js app、管理後台、反向代理與 SSL"],
   ["PostgreSQL", "本機 Docker 開發；上線初期可同機安裝節省成本"],
-  ["Snapshots", "Lightsail 定期備份，保留回復點"],
+  ["Snapshots", "Lightsail 定期備份，保留回復點。CI/CD驗證成功"],
   ["S3", "圖片與上傳檔案，網站成長後再接入"],
   ["SES", "聯絡表單寄信，每月小量寄送很省"]
 ];
