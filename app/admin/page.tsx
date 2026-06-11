@@ -24,8 +24,10 @@ export default async function AdminPage({
         </form>
       </header>
 
-      {searchParams.saved ? <div className="notice">已儲存並更新前台內容。</div> : null}
+      {searchParams.saved === "1" ? <div className="notice">已儲存並更新前台內容。</div> : null}
+      {searchParams.saved === "0" ? <div className="notice">儲存失敗，請確認必填欄位與連結格式。</div> : null}
       {searchParams.created === "1" ? <div className="notice">已新增區塊。</div> : null}
+      {searchParams.created === "0" ? <div className="notice">新增失敗，請確認必填欄位與連結格式。</div> : null}
 
       <form action={updateBlocksAction} className="editorList">
         {blocks.map((block) => (

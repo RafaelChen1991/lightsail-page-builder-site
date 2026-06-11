@@ -4,26 +4,26 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { clearSessionCookie, requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { pageBlockInputFromFormData, validatePageBlockInput } from "@/lib/page-block-input";
 
 export async function updateBlocksAction(formData: FormData) {
   requireAdmin();
 
   const ids = formData.getAll("id").map(String);
+  const updates = ids.map((id) => ({
+    id,
+    result: validatePageBlockInput(pageBlockInputFromFormData(formData, { suffix: id }), {
+      defaultSortOrder: 0
+    })
+  }));
+
+  if (updates.some((update) => !update.result.ok)) redirect("/admin?saved=0");
 
   await Promise.all(
-    ids.map((id) =>
+    updates.map((update) =>
       prisma.pageBlock.update({
-        where: { id },
-        data: {
-          label: String(formData.get(`label:${id}`) || ""),
-          eyebrow: String(formData.get(`eyebrow:${id}`) || "") || null,
-          title: String(formData.get(`title:${id}`) || ""),
-          body: String(formData.get(`body:${id}`) || ""),
-          ctaLabel: String(formData.get(`ctaLabel:${id}`) || "") || null,
-          ctaHref: String(formData.get(`ctaHref:${id}`) || "") || null,
-          sortOrder: Number(formData.get(`sortOrder:${id}`) || 0),
-          published: formData.get(`published:${id}`) === "on"
-        }
+        where: { id: update.id },
+        data: update.result.ok ? update.result.data : {}
       })
     )
   );
@@ -36,23 +36,17 @@ export async function updateBlocksAction(formData: FormData) {
 export async function createBlockAction(formData: FormData) {
   requireAdmin();
 
-  const label = String(formData.get("label") || "").trim();
-  const title = String(formData.get("title") || "").trim();
-  const body = String(formData.get("body") || "").trim();
+  const result = validatePageBlockInput(
+    pageBlockInputFromFormData(formData, { defaultPublished: true }),
+    { defaultSortOrder: 100 }
+  );
 
-  if (!label || !title || !body) redirect("/admin?created=0");
+  if (!result.ok) redirect("/admin?created=0");
 
   await prisma.pageBlock.create({
     data: {
-      slug: `${Date.now()}-${toSlug(label)}`,
-      label,
-      eyebrow: String(formData.get("eyebrow") || "") || null,
-      title,
-      body,
-      ctaLabel: String(formData.get("ctaLabel") || "") || null,
-      ctaHref: String(formData.get("ctaHref") || "") || null,
-      sortOrder: Number(formData.get("sortOrder") || 100),
-      published: true
+      slug: `${Date.now()}-${toSlug(result.data.label)}`,
+      ...result.data
     }
   });
 
