@@ -26,6 +26,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
   return (
     <div className="heroCarousel" aria-label="網站視覺輪播">
       {slides.map((src, index) => (
+        // eslint-disable-next-line @next/next/no-img-element -- Carousel images can come from arbitrary public S3 URLs.
         <img
           key={src}
           src={src}
