@@ -104,6 +104,59 @@ pm2 save
 - `npm run db:push` 失敗：production `DATABASE_URL` 或 PostgreSQL 權限有問題
 - `pm2 restart` 失敗：`LIGHTSAIL_PM2_APP_NAME` 和實際 PM2 app 名稱不同，可在 Lightsail 執行 `pm2 list` 確認
 
+## Prisma migration
+
+專案已加入第一份 migration：
+
+```text
+prisma/migrations/20260611000000_init/migration.sql
+```
+
+GitHub Actions 的 build check 會使用：
+
+```bash
+npm run db:migrate
+```
+
+也就是：
+
+```bash
+prisma migrate deploy
+```
+
+這比 `prisma db push` 更適合 CI，因為 migration 有版本紀錄。
+
+### 為什麼 production deploy 暫時仍保留 db:push
+
+Lightsail production database 之前已經用 `db:push` 建過資料表，因此它不是空資料庫。若直接在 production 執行第一份 migration，Prisma 可能會拒絕套用，因為資料表已存在。
+
+切換 production deploy 前，需要先在 Lightsail 做一次 baseline，告訴 Prisma：
+
+```text
+目前 production schema 已經等同套用過 20260611000000_init
+```
+
+在 Lightsail 專案目錄執行：
+
+```bash
+cd /var/www/lightsail-page-builder-site
+git pull --ff-only origin main
+npm ci
+npx prisma migrate resolve --applied 20260611000000_init
+```
+
+完成後，才能把部署流程中的：
+
+```bash
+npm run db:push
+```
+
+改成：
+
+```bash
+npm run db:migrate
+```
+
 ## 為什麼先不直接用 RDS
 
 RDS 比同機 PostgreSQL 更穩、更好維護，但它會增加固定成本。這個專案初期若只是官方網站 + 後台編輯，同機 PostgreSQL 搭配 snapshot 已足夠。等資料重要性、多人維運、備份要求變高，再拆到 RDS 會比較合理。

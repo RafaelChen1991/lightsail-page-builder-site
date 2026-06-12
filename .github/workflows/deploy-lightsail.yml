@@ -57,7 +57,7 @@ jobs:
         run: npm run lint
 
       - name: Prepare database schema
-        run: npm run db:push
+        run: npm run db:migrate
 
       - name: Seed build database
         run: npm run db:seed
